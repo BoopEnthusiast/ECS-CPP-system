@@ -2,21 +2,10 @@
 #include <vector>
 
 
-class Component {
-protected:
-    void setup() {
-
-    }
-
-    void draw(const float delta) {
-
-    }
-
-    friend class System;
+struct Component {
 };
 
 class Entity {
-private:
     std::vector<Component> components;
 
     friend class System;
@@ -24,25 +13,14 @@ private:
 
 
 class System {
-private:
-    std::vector<Entity> entities;
 
-public:
-    void setupComponents() {
-        for (Entity entity : entities) {
-            for (Component component : entity.components) {
-                component.setup();
-            }
-        }
-    }
+};
 
-    void draw(const float delta) {
-        for (Entity entity : entities) {
-            for (Component component : entity.components) {
-                component.draw(delta);
-            }
-        }
-    }
+
+class SMovement : System {
+
+};
+struct CMovement : Component {
 };
 
 
@@ -83,7 +61,7 @@ void UpdateDrawFrame()
 
     DrawFPS(10, 10);
 
-    mainSystem.draw(GetFPS());
+    mainSystem.draw(GetFrameTime());
 
     EndDrawing();
 }
