@@ -33,16 +33,29 @@ struct Player : Entity
         direction.y = (IsKeyDown(KEY_DOWN)  || IsKeyDown(KEY_S)) - (IsKeyDown(KEY_UP)   || IsKeyDown(KEY_W));
 
         // Steps happening here:
-        // Normalize direction
-        // Multiply direction by speed to make velocity
-        // Multiply velocity by delta
-        // Add velocity to position
+        // Normalize direction // Vector2Normalize(direction)
+        // Multiply direction by speed to make velocity // Vector2Multiply(normalized_direction, (Vector2) {SPEED, SPEED})
+        // Multiply velocity by delta // Vector2Scale(velocity, delta)
+        // Add velocity to position // Vector2Add(position, delta_velocity)
         position = Vector2Add(position, Vector2Scale(Vector2Multiply(Vector2Normalize(direction), (Vector2) {SPEED, SPEED}), delta));
     }
 } player;
 
 const int screenWidth = 850;
 const int screenHeight = 500;
+
+class Registry
+{
+private:
+    std::unordered_set<Entity> updated_entities;
+    std::unordered_set<Entity> drawn_entities;
+
+public:
+    void add_updated_entity(Entity &entity) {
+        // TODO: This function
+    }
+    // TODO: drawn entities adding function
+} registry;
 
 
 int main()
