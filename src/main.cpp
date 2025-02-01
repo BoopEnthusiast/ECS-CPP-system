@@ -1,4 +1,5 @@
 #include "raylib.h"
+#include "raymath.h"
 #include <iostream>
 #include <vector>
 #include <unordered_map>
@@ -9,8 +10,8 @@ void UpdateDrawFrame();
 
 struct Player 
 {
-    const float SPEED = 10.0f;
-    const float RADIUS = 10.0f;
+    const float SPEED = 200.0f;
+    const float RADIUS = 40.0f;
 
     Vector2 position;
     Vector2 velocity;
@@ -18,21 +19,10 @@ struct Player
     void update(float delta) 
     {   
         Vector2 direction{};
-        if (IsKeyDown(KEY_UP) || IsKeyDown(KEY_W)) 
-            direction.y -= 1;
-        if (IsKeyDown(KEY_DOWN) || IsKeyDown(KEY_S))
-            direction.y += 1;
-        if (IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_A))
-            direction.x -= 1;
-        if (IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D))
-            direction.x += 1;
-        
-        velocity = (Vector2){direction.x * SPEED, direction.y * SPEED};
+        direction.x = (IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D)) - (IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_A));
+        direction.y = (IsKeyDown(KEY_DOWN)  || IsKeyDown(KEY_S)) - (IsKeyDown(KEY_UP)   || IsKeyDown(KEY_W));
 
-        position.x += velocity.x * delta;
-        position.y += velocity.y * delta;
-
-        std::cout << velocity.x << " " << velocity.y << std::endl;
+        position = Vector2Add(position, Vector2Scale(Vector2Multiply(Vector2Normalize(direction), (Vector2) {SPEED, SPEED}), delta));
     }
 } player;
 
