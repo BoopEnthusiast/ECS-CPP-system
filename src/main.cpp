@@ -3,55 +3,50 @@
 #include <unordered_map>
 #include <unordered_set>
 
+// Entity (just an ID)
+struct Entity { int id; };
 
-struct Component {
+// Component (base)
+struct Component { virtual ~Component() = default; };
+
+// Example Component
+struct Position : Component { float x, y; };
+
+// System (base)
+struct System {
+    virtual void update() = 0;
+    virtual ~System() = default;
 };
 
-class Entity {
-    std::vector<Component> components;
-
-    template <typename T>
-    void joinSystem(std::unordered_map<Entity, T>& systemToJoin, const T& component) {
-        systemToJoin[&this] = component;
+// Example System
+class MovementSystem : public System {
+public:
+    void update() override {
+        for (auto& [e, pos] : positions)
+            pos->x += 0.1f;  // Simple movement logic
     }
-
-    friend class System;
+    
+    void track(Entity e, Position* p) { positions.emplace_back(e, p); }
+    
+private:
+    std::vector<std::pair<Entity, Position*>> positions;
 };
 
-
-class System {
-
+// Minimal registry
+struct Registry {
+    std::unordered_map<Entity, std::vector<Component*>> entities;
+    MovementSystem movement;
+    
+    void update() {
+        // Update tracking
+        for (auto& [e, comps] : entities)
+            for (auto* c : comps)
+                if (auto* p = dynamic_cast<Position*>(c))
+                    movement.track(e, p);
+        
+        movement.update();
+    }
 };
-
-
-class SMovement : System {
-
-};
-class SDraw : System {
-
-};
-struct CTransform : Component {
-
-};
-
-struct CDraw : Component {
-    Color color;
-};
-
-struct CDrawShape : CDraw {
-    Vector2 offsetPosition;
-};
-
-struct CDrawCircle : CDrawShape {
-    float radius;
-};
-
-
-struct ECS {
-    std::unordered_set<Entity> allEntities;
-    std::unordered_map<Entity, CTransform> transformEntities;
-    std::unordered_map<Entity, CDraw> drawnEntities;
-} ecs;
 
 int screenWidth = 800;
 int screenHeight = 450;
