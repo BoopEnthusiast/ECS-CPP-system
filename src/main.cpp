@@ -4,56 +4,65 @@
 #include <unordered_set>
 
 // Entity (just an ID)
-struct Entity { int id; };
+struct Entity { 
+    int id; 
+};
 
 // Component (base)
-struct Component { virtual ~Component() = default; };
+struct Component { 
+    virtual ~Component() = default; 
+};
 
 // Example Component
-struct Position : Component { float x, y; };
+struct Position : Component { 
+    Vector2 position;
+};
 
 // System (base)
 struct System {
-    virtual void update() = 0;
+    virtual void update(Entity e) = 0;
     virtual ~System() = default;
 };
 
 // Example System
 class MovementSystem : public System {
+private:
+    std::vector<std::pair<Entity, Position*>> positions;
+
 public:
-    void update() override {
-        for (auto& [e, pos] : positions)
-            pos->x += 0.1f;  // Simple movement logic
+    void update(Entity e) override {
+        for (auto& [e, pos] : positions) {
+            if (IsKeyDown(KEY_D))
+                pos->position.x += 0.1f;
+        }
     }
     
     void track(Entity e, Position* p) { positions.emplace_back(e, p); }
-    
-private:
-    std::vector<std::pair<Entity, Position*>> positions;
 };
 
 // Minimal registry
 struct Registry {
-    std::unordered_map<Entity, std::vector<Component*>> entities;
+    std::unordered_map<Entity, std::unordered_set<Component*>> entities;
     MovementSystem movement;
     
     void update() {
         // Update tracking
-        for (auto& [e, comps] : entities)
+        for (auto& [e, comps] : entities) {
             for (auto* c : comps)
                 if (auto* p = dynamic_cast<Position*>(c))
                     movement.track(e, p);
         
-        movement.update();
+            movement.update(e);
+        }
     }
-};
+} registry;
+
+Entity player{1};
 
 int screenWidth = 800;
 int screenHeight = 450;
 
 Camera camera = { 0 };
-
-System mainSystem = System();
 
 void UpdateDrawFrame();
 
@@ -65,8 +74,6 @@ int main() {
     InitWindow(screenWidth, screenHeight, "Raylib Test");
 
     Entity circle = Entity();
-
-    circle.joinSystem(ecs.drawnEntities, new CDraw);
 
     while (!WindowShouldClose()) {
         UpdateDrawFrame();
