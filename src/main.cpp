@@ -1,15 +1,22 @@
+/* raylib */
 #include "raylib.h"
 #include "raymath.h"
+
+/* std */
+// misc
 #include <iostream>
+#include <memory>
+// data structures
 #include <vector>
 #include <unordered_set>
+
 
 
 void UpdateDrawFrame();
 
 struct Entity
 {
-    virtual void init() = 0;
+    virtual void initEntity() = 0;
 };
 
 struct Player : Entity
@@ -20,7 +27,7 @@ struct Player : Entity
     Vector2 position;
     Vector2 velocity;
 
-    void init() override
+    void initEntity() override
     {
 
     }
@@ -47,20 +54,26 @@ const int screenHeight = 500;
 class Registry
 {
 private:
-    std::unordered_set<Entity> updated_entities;
-    std::unordered_set<Entity> drawn_entities;
+    std::unordered_set<std::shared_ptr<Entity>> updated_entities;
+    std::unordered_set<std::shared_ptr<Entity>> drawn_entities;
 
 public:
-    void add_updated_entity(Entity &entity) {
-        // TODO: This function
+    void add_updated_entity(std::shared_ptr<Entity> entity_ptr) 
+    {
+        updated_entities.emplace(entity_ptr);
     }
-    // TODO: drawn entities adding function
-} registry;
+    void add_drawn_entity(std::shared_ptr<Entity> entity_ptr)
+    {
+        drawn_entities.emplace(entity_ptr);
+    }
+}registry;
 
 
 int main()
 {
     InitWindow(screenWidth, screenHeight, "Raylib Test");
+
+    registry.add_updated_entity(std::shared_ptr<Player>(player)); // TODO: Fix this
 
     while (!WindowShouldClose())
     {
@@ -77,7 +90,6 @@ void UpdateDrawFrame()
 {
     // Update player
     player.update(GetFrameTime());
-
 
     /* Draw phase */
     BeginDrawing();
