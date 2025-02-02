@@ -8,7 +8,6 @@
 #include <memory>
 // data structures
 #include <vector>
-#include <unordered_set>
 
 
 
@@ -16,7 +15,7 @@ void UpdateDrawFrame();
 
 struct Entity
 {
-    virtual void initEntity() = 0;
+    virtual void init() = 0;
 };
 
 struct Player : Entity
@@ -27,7 +26,7 @@ struct Player : Entity
     Vector2 position;
     Vector2 velocity;
 
-    void initEntity() override
+    void init() override
     {
 
     }
@@ -54,17 +53,17 @@ const int screenHeight = 500;
 class Registry
 {
 private:
-    std::unordered_set<std::shared_ptr<Entity>> updated_entities;
-    std::unordered_set<std::shared_ptr<Entity>> drawn_entities;
+    std::vector<std::shared_ptr<Entity>> updated_entities;
+    std::vector<std::shared_ptr<Entity>> drawn_entities;
 
 public:
     void add_updated_entity(std::shared_ptr<Entity> entity_ptr) 
     {
-        updated_entities.emplace(entity_ptr);
+        updated_entities.push_back(entity_ptr);
     }
     void add_drawn_entity(std::shared_ptr<Entity> entity_ptr)
     {
-        drawn_entities.emplace(entity_ptr);
+        drawn_entities.push_back(entity_ptr);
     }
 }registry;
 
@@ -73,7 +72,9 @@ int main()
 {
     InitWindow(screenWidth, screenHeight, "Raylib Test");
 
-    registry.add_updated_entity(std::shared_ptr<Player>(player)); // TODO: Fix this
+    std::shared_ptr<Player> player_ptr; // TODO: Fix this
+
+    registry.add_updated_entity(player_ptr);
 
     while (!WindowShouldClose())
     {
