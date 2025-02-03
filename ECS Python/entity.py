@@ -44,6 +44,17 @@ class Velocity:
     x: float = 0.0
     y: float = 0.0
 
+
+@component
+class GravityForce:
+    force: float = 9.8
+
+
+@component
+class JumpForce:
+    force: float = 5.0
+
+
 @component
 class RectCollider:
     position: Position
@@ -70,23 +81,30 @@ class MovementProcessor(esper.Processor):
             position.y += velocity.y
 
 
+class GravityProcessor(esper.Processor):
+    def process(self):
+        for entity, (velocity, gravity) in esper.get_components(Velocity, GravityForce):
+            velocity.y += gravity.force * singleton.delta
+
+
 class ControlledMovementProcessor(esper.Processor):
     def process(self):
-        for entity, (velocity,) in esper.get_components(Velocity):
+        for entity, (velocity, jump) in esper.get_components(Velocity, JumpForce):
             keys = pygame.key.get_pressed()
-            direction = pygame.Vector2(0,0)
-            if keys[pygame.K_w]:
-                direction.y -= 1
-            if keys[pygame.K_s]:
-                direction.y += 1
+            
+            # Left/right movement
+            direction = 0.0
             if keys[pygame.K_a]:
-                direction.x -= 1
+                direction -= 1
             if keys[pygame.K_d]:
-                direction.x += 1
-            if direction:
-                direction = direction.normalize()
-            velocity.x = direction.x * velocity.speed * singleton.delta
-            velocity.y = direction.y * velocity.speed * singleton.delta
+                direction += 1
+            velocity.x = direction * velocity.speed * singleton.delta
+
+
+class JumpEvent:
+    def jump():
+        for entity, (velocity, jump) in esper.get_components(Velocity, JumpForce):
+            velocity.y = -jump.force
 
 
 class RendererProcessor(esper.Processor):
