@@ -1,6 +1,6 @@
 import esper
 import pygame
-from player import Player
+import entity
 
 
 # pygame setup
@@ -10,7 +10,18 @@ clock = pygame.time.Clock()
 running = True
 delta = 0
 
-player: Player = Player
+
+# Setup player
+player = esper.create_entity()
+player_position_component = entity.Position(pygame.Vector2(0.0, 0.0))
+esper.add_component(player, entity.Velocity)
+esper.add_component(player, player_position_component)
+esper.add_component(player, entity.CircleRenderer(screen, player_position_component, 30.0))
+
+esper.add_processor(player, entity.MovementProcessor(), 2)
+esper.add_processor(player, entity.ControlledMovementProcessor(), 1)
+esper.add_processor(player, entity.RendererProcessor())
+
 
 while running:
     # poll for events
@@ -18,13 +29,12 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+    
+    # process all systems
+    esper.process()
 
     # fill the screen with a color to wipe away anything from last frame
     screen.fill("purple")
-
-    pygame.draw.circle(screen, "red", player.position, 40)
-
-    player.draw(delta)
 
     # flip() the display to put your work on screen
     pygame.display.flip()
@@ -35,33 +45,3 @@ while running:
     delta = clock.tick(155) / 1000
 
 pygame.quit()
-# def main():
-#     pygame.init()
-#     screen = pygame.display.set_mode((1280, 720))
-#     clock = pygame.time.Clock()
-#     main_loop()
-#     pygame.quit()
-#     quit()
-
-
-# def main_loop():
-#     while True:
-#         # Check for quitting
-#         for event in pygame.event.get():
-#             if event.type == pygame.QUIT:
-#                 return
-
-#         # Clear frame
-#         screen.fill("purple")
-
-#         pygame.display.flip()
-
-#         clock.tick(155)
-
-    
-
-        
-
-
-# if __name__ == "__main__":
-#     main()
