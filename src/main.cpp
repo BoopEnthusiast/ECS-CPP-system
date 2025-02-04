@@ -10,6 +10,23 @@
 #include <vector>
 
 
+struct System
+{
+    virtual void process() = 0;
+};
+
+class Registry
+{
+public:
+    std::vector<int> entities = {0};
+    std::vector<std::unique_ptr<System>> systems;
+
+    int new_entity()
+    {
+        entities.push_back(entities.back());
+        return entities.back();
+    }
+} registry;
 
 void UpdateDrawFrame();
 
@@ -50,42 +67,20 @@ struct Player : Entity
 const int screenWidth = 850;
 const int screenHeight = 500;
 
-struct System
-{
-    virtual void process() = 0;
-};
 
-struct PrintSystem : System
+struct DrawSystem : System
 {
     void process() override {
-        std::cout << "Hello, testing, testing 123" << std::endl;
+        DrawCircle(100, 100, 50.0f, RED);
     }
 };
-
-
-class Registry
-{
-private:
-    std::vector<std::unique_ptr<System>> systems;
-
-public:
-    void add_system(std::unique_ptr<System> system_ptr)
-    {
-        systems.push_back(system_ptr);
-    }
-
-    std::vector<std::unique_ptr<System>> get_systems()
-    {
-        return systems;
-    }
-} registry;
 
 
 int main()
 {
     InitWindow(screenWidth, screenHeight, "Raylib Test");
 
-    std::shared_ptr<Player> player_ptr; // TODO: Fix this
+    registry.systems.push_back(std::make_unique<DrawSystem>());
 
     while (!WindowShouldClose())
     {
@@ -109,7 +104,7 @@ void UpdateDrawFrame()
     ClearBackground(RAYWHITE);
     
     // Go through systems
-    for (std::unique_ptr<System> system : registry.get_systems())
+    for (std::unique_ptr<System>& system : registry.systems)
     {
         system->process();
     }
