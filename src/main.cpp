@@ -50,22 +50,35 @@ struct Player : Entity
 const int screenWidth = 850;
 const int screenHeight = 500;
 
+struct System
+{
+    virtual void process() = 0;
+};
+
+struct PrintSystem : System
+{
+    void process() override {
+        std::cout << "Hello, testing, testing 123" << std::endl;
+    }
+};
+
+
 class Registry
 {
 private:
-    std::vector<std::shared_ptr<Entity>> updated_entities;
-    std::vector<std::shared_ptr<Entity>> drawn_entities;
+    std::vector<std::unique_ptr<System>> systems;
 
 public:
-    void add_updated_entity(std::shared_ptr<Entity> entity_ptr) 
+    void add_system(std::unique_ptr<System> system_ptr)
     {
-        updated_entities.push_back(entity_ptr);
+        systems.push_back(system_ptr);
     }
-    void add_drawn_entity(std::shared_ptr<Entity> entity_ptr)
+
+    std::vector<std::unique_ptr<System>> get_systems()
     {
-        drawn_entities.push_back(entity_ptr);
+        return systems;
     }
-}registry;
+} registry;
 
 
 int main()
@@ -73,8 +86,6 @@ int main()
     InitWindow(screenWidth, screenHeight, "Raylib Test");
 
     std::shared_ptr<Player> player_ptr; // TODO: Fix this
-
-    registry.add_updated_entity(player_ptr);
 
     while (!WindowShouldClose())
     {
@@ -97,8 +108,11 @@ void UpdateDrawFrame()
     // Set background/clear previous frame
     ClearBackground(RAYWHITE);
     
-    // Draw player
-    DrawCircle(player.position.x, player.position.y, player.RADIUS, RED);
+    // Go through systems
+    for (std::unique_ptr<System> system : registry.get_systems())
+    {
+        system->process();
+    }
 
     // Show FPS
     DrawFPS(10, 10);
