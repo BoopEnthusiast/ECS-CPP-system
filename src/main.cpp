@@ -8,6 +8,8 @@
 #include <memory>
 // data structures
 #include <vector>
+#include <map>
+#include <set>
 
 
 struct System
@@ -15,16 +17,33 @@ struct System
     virtual void process() = 0;
 };
 
+struct Component
+{
+
+};
+
 class Registry
 {
 public:
     std::vector<int> entities = {0};
-    std::vector<std::unique_ptr<System>> systems;
+    std::set<std::unique_ptr<System>> systems;
+    std::map<int, std::set<Component>> components;
 
-    int new_entity()
+    int newEntity()
     {
-        entities.push_back(entities.back());
+        entities.push_back(entities.back() + 1);
         return entities.back();
+    }
+
+    template <typename ComponentType>
+    std::vector<Component> getAllOfComponent() 
+    {
+        std::vector<Component> componentsToReturn;
+        for (std::set<Component> component : components)
+        {
+
+        }
+        return componentsToReturn;
     }
 } registry;
 
@@ -80,7 +99,7 @@ int main()
 {
     InitWindow(screenWidth, screenHeight, "Raylib Test");
 
-    registry.systems.push_back(std::make_unique<DrawSystem>());
+    registry.systems.emplace(std::make_unique<DrawSystem>());
 
     while (!WindowShouldClose())
     {
@@ -104,7 +123,7 @@ void UpdateDrawFrame()
     ClearBackground(RAYWHITE);
     
     // Go through systems
-    for (std::unique_ptr<System>& system : registry.systems)
+    for (const std::unique_ptr<System>& system : registry.systems)
     {
         system->process();
     }
