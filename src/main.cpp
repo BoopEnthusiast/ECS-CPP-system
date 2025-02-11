@@ -12,19 +12,34 @@
 #include <set>
 
 
+struct Component
+{
+};
+
 struct System
 {
     virtual void process() = 0;
 };
 
-struct Component
+struct CPosition : Component
 {
+    Vector2 position;
 
+    CPosition(Vector2 pos)
+    {
+        position = pos;
+    }
 };
 
-class Registry
+struct SDraw : System
 {
-public:
+    void process() override {
+        DrawCircle(100, 100, 50.0f, RED);
+    }
+};
+
+struct Registry
+{
     std::vector<int> entities = {0};
     std::set<std::unique_ptr<System>> systems;
     std::map<int, std::set<Component>> components;
@@ -35,13 +50,18 @@ public:
         return entities.back();
     }
 
+    
+
     template <typename ComponentType>
-    std::vector<Component> getAllOfComponent() 
+    std::vector<Component> getAllOfComponent() const
     {
         std::vector<Component> componentsToReturn;
-        for (std::set<Component> component : components)
+        for (const auto& [entity, component] : components)
         {
-
+            if (dynamic_cast<ComponentType*>(&component))
+            {
+                componentsToReturn.push_back(component);
+            }
         }
         return componentsToReturn;
     }
@@ -87,19 +107,11 @@ const int screenWidth = 850;
 const int screenHeight = 500;
 
 
-struct DrawSystem : System
-{
-    void process() override {
-        DrawCircle(100, 100, 50.0f, RED);
-    }
-};
-
-
 int main()
 {
     InitWindow(screenWidth, screenHeight, "Raylib Test");
 
-    registry.systems.emplace(std::make_unique<DrawSystem>());
+    registry.systems.emplace(std::make_unique<SDraw>());
 
     while (!WindowShouldClose())
     {
